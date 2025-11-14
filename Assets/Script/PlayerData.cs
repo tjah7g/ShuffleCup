@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 [System.Serializable]
@@ -10,6 +8,7 @@ public class PlayerData : MonoBehaviour
     public int startingCups = 3;
 
     [Header("Current Stats")]
+    public string username;
     public int score;
     public int health;
     public int currentLevel;

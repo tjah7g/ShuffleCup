@@ -12,6 +12,7 @@ public class LeaderboardManager : MonoBehaviour
     public Button closeButton;
     public Button refreshButton;
     public TMP_Text statusText;
+    public TMP_Text titleText;
 
     [Header("Settings")]
     public int topPlayersToShow = 10;
@@ -43,7 +44,7 @@ public class LeaderboardManager : MonoBehaviour
     {
         UpdateStatus("Loading leaderboard...");
 
-        StartCoroutine(APIManager.Instance.GetLeaderboard(topPlayersToShow, (entries, error) =>
+        StartCoroutine(APIManager.Instance.GetLeaderboard(topPlayersToShow, (scores, error) =>
         {
             if (error != null)
             {
@@ -51,30 +52,37 @@ public class LeaderboardManager : MonoBehaviour
                 return;
             }
 
-            DisplayLeaderboard(entries);
+            DisplayLeaderboard(scores);
             UpdateStatus("");
         }));
     }
 
-    void DisplayLeaderboard(List<LeaderboardEntry> entries)
+    void DisplayLeaderboard(List<PlayerScore> scores)
     {
-        // Clear existing entries
+        Debug.Log($"DisplayLeaderboard called with {scores?.Count ?? 0} scores");
+
+        // Clear existing
         foreach (Transform child in leaderboardContent)
         {
             Destroy(child.gameObject);
         }
 
-        // Create new entries
-        if (entries != null && entries.Count > 0)
+        if (scores != null && scores.Count > 0)
         {
-            for (int i = 0; i < entries.Count; i++)
+            for (int i = 0; i < scores.Count; i++)
             {
+                Debug.Log($"Creating entry {i + 1}: {scores[i].playerName} - {scores[i].score}");
+
                 GameObject entryObj = Instantiate(leaderboardEntryPrefab, leaderboardContent);
                 LeaderboardEntryUI entryUI = entryObj.GetComponent<LeaderboardEntryUI>();
 
                 if (entryUI != null)
                 {
-                    entryUI.SetData(i + 1, entries[i].playerName, entries[i].score, entries[i].level);
+                    entryUI.SetData(i + 1, scores[i]);
+                }
+                else
+                {
+                    Debug.LogError("LeaderboardEntryUI component not found on prefab!");
                 }
             }
         }

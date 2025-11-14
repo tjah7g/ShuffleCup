@@ -1,5 +1,4 @@
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class GameManager : MonoBehaviour
@@ -17,18 +16,29 @@ public class GameManager : MonoBehaviour
 
     private int correctStreakCount = 0;
     private bool isPlaying = false;
+    private string currentPlayerUsername;
 
     void Awake()
     {
         if (Instance == null)
+        {
             Instance = this;
+        }
         else
+        {
             Destroy(gameObject);
+        }
     }
 
-    void Start()
+    public void SetPlayerUsername(string username)
     {
-        InitializeGame();
+        currentPlayerUsername = username;
+        playerData.username = username;
+    }
+
+    public string GetPlayerUsername()
+    {
+        return currentPlayerUsername;
     }
 
     public void InitializeGame()
@@ -122,7 +132,22 @@ public class GameManager : MonoBehaviour
     void GameOver()
     {
         isPlaying = false;
-        uiManager.ShowGameOver(playerData.score, playerData.currentLevel);
+
+        // Auto submit score
+        StartCoroutine(APIManager.Instance.SubmitScore(
+            currentPlayerUsername,
+            playerData.score,
+            playerData.currentLevel,
+            (success, message) =>
+            {
+                if (success)
+                {
+                    Debug.Log("Score auto-submitted to leaderboard!");
+                }
+
+                uiManager.ShowGameOver(playerData.score, playerData.currentLevel, success);
+            }
+        ));
     }
 
     public void RestartGame()
